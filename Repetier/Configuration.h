@@ -43,11 +43,20 @@
 // ################## EDIT THESE SETTINGS MANUALLY ################
 // ################ END MANUAL SETTINGS ##########################
 
+#undef FAN_BOARD_PIN
 #define FAN_BOARD_PIN -1
+#define BOARD_FAN_SPEED 255
+#define FAN_THERMO_PIN -1
+#define FAN_THERMO_MIN_PWM 128
+#define FAN_THERMO_MAX_PWM 255
+#define FAN_THERMO_MIN_TEMP 45
+#define FAN_THERMO_MAX_TEMP 60
+#define FAN_THERMO_THERMISTOR_PIN -1
+#define FAN_THERMO_THERMISTOR_TYPE 1
 
 //#define EXTERNALSERIAL  use Arduino serial library instead of build in. Requires more ram, has only 63 byte input buffer.
-// Uncomment the following line if you are using arduino compatible firmware made for Arduino version earlier then 1.0
-// If it is incompatible you will get compiler errors about write functions not beeing compatible!
+// Uncomment the following line if you are using Arduino compatible firmware made for Arduino version earlier then 1.0
+// If it is incompatible you will get compiler errors about write functions not being compatible!
 //#define COMPAT_PRE1
 #define BLUETOOTH_SERIAL  -1
 #define BLUETOOTH_BAUD  115200
@@ -66,18 +75,24 @@
 #define RETRACT_ON_PAUSE 2
 #define PAUSE_START_COMMANDS ""
 #define PAUSE_END_COMMANDS ""
+#define SHARED_EXTRUDER_HEATER 0
 #define EXT0_X_OFFSET 0
 #define EXT0_Y_OFFSET 0
 #define EXT0_Z_OFFSET 0
 #define EXT0_STEPS_PER_MM 105
-#define EXT0_TEMPSENSOR_TYPE 97
+#define EXT0_TEMPSENSOR_TYPE 1
 #define EXT0_TEMPSENSOR_PIN TEMP_0_PIN
 #define EXT0_HEATER_PIN HEATER_0_PIN
 #define EXT0_STEP_PIN ORIG_E0_STEP_PIN
 #define EXT0_DIR_PIN ORIG_E0_DIR_PIN
-#define EXT0_INVERSE 1
-#define EXT0_ENABLE_PIN E0_ENABLE_PIN
+#define EXT0_INVERSE 0
+#define EXT0_ENABLE_PIN ORIG_E0_ENABLE_PIN
 #define EXT0_ENABLE_ON 0
+#define EXT0_MIRROR_STEPPER 0
+#define EXT0_STEP2_PIN ORIG_E0_STEP_PIN
+#define EXT0_DIR2_PIN ORIG_E0_DIR_PIN
+#define EXT0_INVERSE2 0
+#define EXT0_ENABLE2_PIN ORIG_E0_ENABLE_PIN
 #define EXT0_MAX_FEEDRATE 50
 #define EXT0_MAX_START_FEEDRATE 20
 #define EXT0_MAX_ACCELERATION 5000
@@ -101,23 +116,6 @@
 #define EXT0_DECOUPLE_TEST_PERIOD 12000
 #define EXT0_JAM_PIN -1
 #define EXT0_JAM_PULLUP 0
-
-#define NUM_TEMPS_USERTHERMISTOR0 0
-#define USER_THERMISTORTABLE0 {}
-#define NUM_TEMPS_USERTHERMISTOR1 0
-#define USER_THERMISTORTABLE1 {}
-#define NUM_TEMPS_USERTHERMISTOR2 0
-#define USER_THERMISTORTABLE2 {}
-#define USE_GENERIC_THERMISTORTABLE_1
-#define GENERIC_THERM1_T0 25
-#define GENERIC_THERM1_R0 100000
-#define GENERIC_THERM1_BETA 3950
-#define GENERIC_THERM1_MIN_TEMP -20
-#define GENERIC_THERM1_MAX_TEMP 300
-#define GENERIC_THERM1_R1 0
-#define GENERIC_THERM1_R2 10000
-#define GENERIC_THERM_VREF 5
-#define GENERIC_THERM_NUM_ENTRIES 33
 
 #define FEATURE_RETRACTION 1
 #define AUTORETRACT_ENABLED 0
@@ -162,7 +160,7 @@
 #define HAVE_HEATED_BED 1
 #define HEATED_BED_MAX_TEMP 120
 #define SKIP_M190_IF_WITHIN 3
-#define HEATED_BED_SENSOR_TYPE 97
+#define HEATED_BED_SENSOR_TYPE 1
 #define HEATED_BED_SENSOR_PIN TEMP_1_PIN
 #define HEATED_BED_HEATER_PIN HEATER_1_PIN
 #define HEATED_BED_SET_INTERVAL 5000
@@ -178,6 +176,55 @@
 #define MAXTEMP 275
 #define MIN_DEFECT_TEMPERATURE -10
 #define MAX_DEFECT_TEMPERATURE 290
+
+// ##########################################################################################
+// ##                             Laser configuration                                      ##
+// ##########################################################################################
+
+/*
+If the firmware is in laser mode, it can control a laser output to cut or engrave materials.
+Please use this feature only if you know about safety and required protection. Lasers are
+dangerous and can hurt or make you blind!!!
+
+The default laser driver only supports laser on and off. Here you control the eíntensity with
+your feedrate. For exchangeable diode lasers this is normally enough. If you need more control
+you can set the intensity in a range 0-255 with a custom extension to the driver. See driver.h
+and comments on how to extend the functions non invasive with our event system.
+
+If you have a laser - powder system you will like your E override. If moves contain a
+increasing extruder position it will laser that move. With this trick you can
+use existing fdm slicers to laser the output. Laser width is extrusion width.
+
+Other tools may use M3 and M5 to enable/disable laser. Here G1/G2/G3 moves have laser enabled
+and G0 moves have it disables.
+
+In any case, laser only enables while moving. At the end of a move it gets
+automatically disabled.
+*/
+
+#define SUPPORT_LASER 0
+#define LASER_PIN -1
+#define LASER_ON_HIGH 1
+
+// ##                              CNC configuration                                       ##
+
+/*
+If the firmware is in CNC mode, it can control a mill with M3/M4/M5. It works
+similar to laser mode, but mill keeps enabled during G0 moves and it allows
+setting rpm (only with event extension that supports this) and milling direction.
+It also can add a delay to wait for spindle to run on full speed.
+*/
+
+#define SUPPORT_CNC 0
+#define CNC_WAIT_ON_ENABLE 300
+#define CNC_WAIT_ON_DISABLE 0
+#define CNC_ENABLE_PIN -1
+#define CNC_ENABLE_WITH 1
+#define CNC_DIRECTION_PIN -1
+#define CNC_DIRECTION_CW 1
+
+
+#define DEFAULT_PRINTER_MODE 0
 
 // ################ Endstop configuration #####################
 
@@ -235,7 +282,7 @@
 #define Z_HOME_DIR -1
 #define X_MAX_LENGTH 200
 #define Y_MAX_LENGTH 200
-#define Z_MAX_LENGTH 180
+#define Z_MAX_LENGTH 120
 #define X_MIN_POS 0
 #define Y_MIN_POS 0
 #define Z_MIN_POS 0
@@ -247,6 +294,10 @@
 #define DISTORTION_START_DEGRADE 0.5
 #define DISTORTION_END_HEIGHT 1
 #define DISTORTION_EXTRAPOLATE_CORNERS 0
+#define DISTORTION_XMIN 10
+#define DISTORTION_YMIN 10
+#define DISTORTION_XMAX 190
+#define DISTORTION_YMAX 190
 
 // ##########################################################################################
 // ##                           Movement settings                                          ##
@@ -257,6 +308,7 @@
 
 #define DELTA_SEGMENTS_PER_SECOND_PRINT 180 // Move accurate setting for print moves
 #define DELTA_SEGMENTS_PER_SECOND_MOVE 70 // Less accurate setting for other moves
+#define EXACT_DELTA_MOVES 1
 
 // Delta settings
 #define DELTA_HOME_ON_POWER 0
@@ -264,18 +316,18 @@
 #define DELTASEGMENTS_PER_PRINTLINE 24
 #define STEPPER_INACTIVE_TIME 360L
 #define MAX_INACTIVE_TIME 900L
-#define MAX_FEEDRATE_X 200
-#define MAX_FEEDRATE_Y 200
-#define MAX_FEEDRATE_Z 40
+#define MAX_FEEDRATE_X 100
+#define MAX_FEEDRATE_Y 100
+#define MAX_FEEDRATE_Z 10
 #define HOMING_FEEDRATE_X 40
 #define HOMING_FEEDRATE_Y 40
-#define HOMING_FEEDRATE_Z 10
+#define HOMING_FEEDRATE_Z 4
 #define HOMING_ORDER HOME_ORDER_XYZ
 #define ZHOME_MIN_TEMPERATURE 0
 #define ZHOME_HEAT_ALL 1
 #define ZHOME_HEAT_HEIGHT 20
-#define ZHOME_X_POS 0
-#define ZHOME_Y_POS 0
+#define ZHOME_X_POS 999999
+#define ZHOME_Y_POS 999999
 #define ENABLE_BACKLASH_COMPENSATION 0
 #define X_BACKLASH 0
 #define Y_BACKLASH 0
@@ -292,23 +344,31 @@
 #define MAX_TRAVEL_ACCELERATION_UNITS_PER_SQ_SECOND_X 1000
 #define MAX_TRAVEL_ACCELERATION_UNITS_PER_SQ_SECOND_Y 1000
 #define MAX_TRAVEL_ACCELERATION_UNITS_PER_SQ_SECOND_Z 100
+#define INTERPOLATE_ACCELERATION_WITH_Z 0
+#define ACCELERATION_FACTOR_TOP 100
 #define MAX_JERK 15
 #define MAX_ZJERK 0.3
 #define PRINTLINE_CACHE_SIZE 16
 #define MOVE_CACHE_LOW 10
 #define LOW_TICKS_PER_MOVE 250000
+#define EXTRUDER_SWITCH_XY_SPEED 100
+#define DUAL_X_AXIS 0
 #define FEATURE_TWO_XSTEPPER 0
 #define X2_STEP_PIN   ORIG_E1_STEP_PIN
 #define X2_DIR_PIN    ORIG_E1_DIR_PIN
-#define X2_ENABLE_PIN E1_ENABLE_PIN
+#define X2_ENABLE_PIN ORIG_E1_ENABLE_PIN
 #define FEATURE_TWO_YSTEPPER 0
 #define Y2_STEP_PIN   ORIG_E1_STEP_PIN
 #define Y2_DIR_PIN    ORIG_E1_DIR_PIN
-#define Y2_ENABLE_PIN E1_ENABLE_PIN
-#define FEATURE_TWO_ZSTEPPER 0
+#define Y2_ENABLE_PIN ORIG_E1_ENABLE_PIN
+#define FEATURE_TWO_ZSTEPPER 1
 #define Z2_STEP_PIN   ORIG_E1_STEP_PIN
 #define Z2_DIR_PIN    ORIG_E1_DIR_PIN
-#define Z2_ENABLE_PIN E1_ENABLE_PIN
+#define Z2_ENABLE_PIN ORIG_E1_ENABLE_PIN
+#define FEATURE_THREE_ZSTEPPER 0
+#define Z3_STEP_PIN   ORIG_E2_STEP_PIN
+#define Z3_DIR_PIN    ORIG_E2_DIR_PIN
+#define Z3_ENABLE_PIN ORIG_E2_ENABLE_PIN
 #define FEATURE_DITTO_PRINTING 0
 #define USE_ADVANCE 0
 #define ENABLE_QUADRATIC_ADVANCE 0
@@ -324,7 +384,9 @@
 #define WAITING_IDENTIFIER "wait"
 #define ECHO_ON_EXECUTE 1
 #define EEPROM_MODE 1
+#undef PS_ON_PIN
 #define PS_ON_PIN ORIG_PS_ON_PIN
+#define JSON_OUTPUT 0
 
 /* ======== Servos =======
 Control the servos with
@@ -348,6 +410,9 @@ WARNING: Servos can draw a considerable amount of current. Make sure your system
 
 // #################### Z-Probing #####################
 
+#define Z_PROBE_Z_OFFSET 0
+#define Z_PROBE_Z_OFFSET_MODE 0
+#define UI_BED_COATING 1
 #define FEATURE_Z_PROBE 0
 #define Z_PROBE_BED_DISTANCE 10
 #define Z_PROBE_PIN -1
@@ -363,6 +428,8 @@ WARNING: Servos can draw a considerable amount of current. Make sure your system
 #define Z_PROBE_HEIGHT 40
 #define Z_PROBE_START_SCRIPT ""
 #define Z_PROBE_FINISHED_SCRIPT ""
+#define Z_PROBE_REQUIRES_HEATING 0
+#define Z_PROBE_MIN_TEMPERATURE 150
 #define FEATURE_AUTOLEVEL 1
 #define Z_PROBE_X1 20
 #define Z_PROBE_Y1 20
@@ -370,6 +437,19 @@ WARNING: Servos can draw a considerable amount of current. Make sure your system
 #define Z_PROBE_Y2 20
 #define Z_PROBE_X3 100
 #define Z_PROBE_Y3 160
+#define BED_LEVELING_METHOD 0
+#define BED_CORRECTION_METHOD 0
+#define BED_LEVELING_GRID_SIZE 5
+#define BED_LEVELING_REPETITIONS 5
+#define BED_MOTOR_1_X 0
+#define BED_MOTOR_1_Y 0
+#define BED_MOTOR_2_X 200
+#define BED_MOTOR_2_Y 0
+#define BED_MOTOR_3_X 100
+#define BED_MOTOR_3_Y 200
+#define BENDING_CORRECTION_A 0
+#define BENDING_CORRECTION_B 0
+#define BENDING_CORRECTION_C 0
 #define FEATURE_AXISCOMP 0
 #define AXISCOMP_TANXY 0
 #define AXISCOMP_TANYZ 0
@@ -377,12 +457,10 @@ WARNING: Servos can draw a considerable amount of current. Make sure your system
 
 #ifndef SDSUPPORT  // Some boards have sd support on board. These define the values already in pins.h
 #define SDSUPPORT 1
+#undef SDCARDDETECT
 #define SDCARDDETECT -1
 #define SDCARDDETECTINVERTED 0
 #endif
-
-#define FAN_BOARD_PIN -1
-
 #define SD_EXTENDED_DIR 1 /** Show extended directory including file length. Don't use this with Pronterface! */
 #define SD_RUN_ON_STOP ""
 #define SD_STOP_HEATER_AND_MOTORS_ON_STOP 1
@@ -390,9 +468,22 @@ WARNING: Servos can draw a considerable amount of current. Make sure your system
 #define FEATURE_MEMORY_POSITION 1
 #define FEATURE_CHECKSUM_FORCED 0
 #define FEATURE_FAN_CONTROL 1
+#define FEATURE_FAN2_CONTROL 0
 #define FEATURE_CONTROLLER 11
-#define UI_LANGUAGE 0
-#define UI_PRINTER_NAME "Dup-I3"
+#define ADC_KEYPAD_PIN -1
+#define LANGUAGE_EN_ACTIVE 1
+#define LANGUAGE_DE_ACTIVE 1
+#define LANGUAGE_NL_ACTIVE 0
+#define LANGUAGE_PT_ACTIVE 1
+#define LANGUAGE_IT_ACTIVE 1
+#define LANGUAGE_ES_ACTIVE 1
+#define LANGUAGE_FI_ACTIVE 0
+#define LANGUAGE_SE_ACTIVE 0
+#define LANGUAGE_FR_ACTIVE 1
+#define LANGUAGE_CZ_ACTIVE 0
+#define LANGUAGE_PL_ACTIVE 1
+#define LANGUAGE_TR_ACTIVE 1
+#define UI_PRINTER_NAME "Duplicator I3"
 #define UI_PRINTER_COMPANY "Wanhao"
 #define UI_PAGES_DURATION 4000
 #define UI_ANIMATION 0
@@ -401,19 +492,16 @@ WARNING: Servos can draw a considerable amount of current. Make sure your system
 #define UI_AUTORETURN_TO_MENU_AFTER 30000
 #define FEATURE_UI_KEYS 0
 #define UI_ENCODER_SPEED 1
-#define UI_REVERSE_ENCODER 1
+#define UI_REVERSE_ENCODER 0
 #define UI_KEY_BOUNCETIME 10
 #define UI_KEY_FIRST_REPEAT 500
 #define UI_KEY_REDUCE_REPEAT 50
 #define UI_KEY_MIN_REPEAT 50
 #define FEATURE_BEEPER 1
-#define UI_ENCODER_NOBEEP 1
 #define CASE_LIGHTS_PIN -1
 #define CASE_LIGHT_DEFAULT_ON 1
-#define UI_START_SCREEN_DELAY 1500
+#define UI_START_SCREEN_DELAY 1000
 #define UI_DYNAMIC_ENCODER_SPEED 1
-#define LED_PIN -1
-
         /**
 Beeper sound definitions for short beeps during key actions
 and longer beeps for important actions.
@@ -498,12 +586,20 @@ Values must be in range 1..255
                 "name": "Extruder 0",
                 "step": "ORIG_E0_STEP_PIN",
                 "dir": "ORIG_E0_DIR_PIN",
-                "enable": "E0_ENABLE_PIN"
+                "enable": "ORIG_E0_ENABLE_PIN"
             },
             "advanceBacklashSteps": 0,
             "decoupleTestPeriod": 12,
             "jamPin": -1,
-            "jamPullup": "0"
+            "jamPullup": "0",
+            "mirror": "0",
+            "invert2": "0",
+            "stepper2": {
+                "name": "Extruder 0",
+                "step": "ORIG_E0_STEP_PIN",
+                "dir": "ORIG_E0_DIR_PIN",
+                "enable": "ORIG_E0_ENABLE_PIN"
+            }
         }
     ],
     "uiLanguage": 0,
@@ -514,7 +610,7 @@ Values must be in range 1..255
     "xMaxEndstop": 0,
     "yMaxEndstop": 0,
     "zMaxEndstop": 0,
-    "motherboard": 63,
+    "motherboard": 33,
     "driveSystem": 0,
     "xMaxSpeed": 100,
     "xHomingSpeed": 40,
@@ -611,21 +707,28 @@ Values must be in range 1..255
         "name": "Extruder 1",
         "step": "ORIG_E1_STEP_PIN",
         "dir": "ORIG_E1_DIR_PIN",
-        "enable": "E1_ENABLE_PIN"
+        "enable": "ORIG_E1_ENABLE_PIN"
     },
     "mirrorY": 0,
     "mirrorYMotor": {
         "name": "Extruder 1",
         "step": "ORIG_E1_STEP_PIN",
         "dir": "ORIG_E1_DIR_PIN",
-        "enable": "E1_ENABLE_PIN"
+        "enable": "ORIG_E1_ENABLE_PIN"
     },
-    "mirrorZ": 0,
+    "mirrorZ": "1",
     "mirrorZMotor": {
         "name": "Extruder 1",
         "step": "ORIG_E1_STEP_PIN",
         "dir": "ORIG_E1_DIR_PIN",
-        "enable": "E1_ENABLE_PIN"
+        "enable": "ORIG_E1_ENABLE_PIN"
+    },
+    "mirrorZ3": "0",
+    "mirrorZ3Motor": {
+        "name": "Extruder 2",
+        "step": "ORIG_E2_STEP_PIN",
+        "dir": "ORIG_E2_DIR_PIN",
+        "enable": "ORIG_E2_ENABLE_PIN"
     },
     "dittoPrinting": "0",
     "featureServos": "0",
@@ -704,23 +807,20 @@ Values must be in range 1..255
     "userTable0": {
         "r1": 0,
         "r2": 4700,
-        "temps": [
-
-        ]
+        "temps": [],
+        "numEntries": 0
     },
     "userTable1": {
         "r1": 0,
         "r2": 4700,
-        "temps": [
-
-        ]
+        "temps": [],
+        "numEntries": 0
     },
     "userTable2": {
         "r1": 0,
         "r2": 4700,
-        "temps": [
-
-        ]
+        "temps": [],
+        "numEntries": 0
     },
     "tempHysteresis": 0,
     "pidControlRange": 20,
@@ -736,6 +836,15 @@ Values must be in range 1..255
     "sdExtendedDir": "1",
     "featureFanControl": "1",
     "fanPin": "ORIG_FAN_PIN",
+    "featureFan2Control": "0",
+    "fan2Pin": "ORIG_FAN2_PIN",
+    "fanThermoPin": -1,
+    "fanThermoMinPWM": 128,
+    "fanThermoMaxPWM": 255,
+    "fanThermoMinTemp": 45,
+    "fanThermoMaxTemp": 60,
+    "fanThermoThermistorPin": -1,
+    "fanThermoThermistorType": 1,
     "scalePidToMax": 0,
     "zProbePin": -1,
     "zProbeBedDistance": 10,
@@ -800,6 +909,10 @@ Values must be in range 1..255
     "distortionStartDegrade": 0.5,
     "distortionEndDegrade": 1,
     "distortionExtrapolateCorners": "0",
+    "distortionXMin": 10,
+    "distortionXMax": 190,
+    "distortionYMin": 10,
+    "distortionYMax": 190,
     "sdRunOnStop": "",
     "sdStopHeaterMotorsOnStop": "1",
     "featureRetraction": "1",
@@ -907,6 +1020,57 @@ Values must be in range 1..255
     "zHomeYPos": 999999,
     "zHomeHeatHeight": 20,
     "zHomeHeatAll": "1",
+    "zProbeZOffsetMode": 0,
+    "zProbeZOffset": 0,
+    "uiBedCoating": "1",
+    "langEN": "1",
+    "langDE": "1",
+    "langNL": "0",
+    "langPT": "1",
+    "langIT": "1",
+    "langES": "1",
+    "langFI": "0",
+    "langSE": "0",
+    "langFR": "1",
+    "langCZ": "0",
+    "langPL": "1",
+    "langTR": "1",
+    "interpolateAccelerationWithZ": 0,
+    "accelerationFactorTop": 100,
+    "bendingCorrectionA": 0,
+    "bendingCorrectionB": 0,
+    "bendingCorrectionC": 0,
+    "preventZDisableOnStepperTimeout": "0",
+    "supportLaser": "0",
+    "laserPin": -1,
+    "laserOnHigh": "1",
+    "defaultPrinterMode": 0,
+    "supportCNC": "0",
+    "cncWaitOnEnable": 300,
+    "cncWaitOnDisable": 0,
+    "cncEnablePin": -1,
+    "cncEnableWith": "1",
+    "cncDirectionPin": -1,
+    "cncDirectionCW": "1",
+    "startupGCode": "",
+    "jsonOutput": "0",
+    "bedLevelingMethod": 0,
+    "bedCorrectionMethod": 0,
+    "bedLevelingGridSize": 5,
+    "bedLevelingRepetitions": 5,
+    "bedMotor1X": 0,
+    "bedMotor1Y": 0,
+    "bedMotor2X": 200,
+    "bedMotor2Y": 0,
+    "bedMotor3X": 100,
+    "bedMotor3Y": 200,
+    "zProbeRequiresHeating": "0",
+    "zProbeMinTemperature": 150,
+    "adcKeypadPin": -1,
+    "sharedExtruderHeater": "0",
+    "extruderSwitchXYSpeed": 100,
+    "dualXAxis": "0",
+    "boardFanSpeed": 255,
     "hasMAX6675": false,
     "hasMAX31855": false,
     "hasGeneric1": false,
@@ -916,7 +1080,7 @@ Values must be in range 1..255
     "hasUser1": false,
     "hasUser2": false,
     "numExtruder": 1,
-    "version": 92.3,
+    "version": 92.9,
     "primaryPortName": ""
 }
 ========== End configuration string ==========
